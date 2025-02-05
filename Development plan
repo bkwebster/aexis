@@ -1,0 +1,155 @@
+# Aexis Task Manager - Development Plan
+
+## Introduction
+
+We are building a sophisticated task and event management system using Next.js 15 (App Router) with TypeScript and Supabase as our backend. The application will provide an intuitive timeline-based interface for managing tasks and events across different organizational contexts (Projects, Clients) with temporal and priority-based organization.
+
+Key Features:
+
+- Horizontal column "timeline" view organized by weeks
+- Day-based rows grouped in each Week-based column
+- Column sorting by Project, Client, Date, and Priority
+- Real-time updates using Supabase
+- Modern authentication flow
+- Responsive and intuitive UI
+
+## Development Plan
+
+### Phase 1: Project Setup and Authentication
+
+1. Initialize Next.js 15 project with TypeScript and App Router
+
+   - Use `create-next-app` with Supabase template
+   - Configure environment variables
+   - Set up TypeScript configuration
+
+2. Implement Authentication (Supabase Auth)
+   - Set up auth providers
+   - Create login/signup flows
+   - Implement protected routes
+   - Add session management
+   - Configure auth middleware
+
+### Phase 2: Database Schema and Types
+
+1. Design and implement Supabase database schema
+
+   ```sql
+   - Users table (handled by Supabase Auth)
+   - Projects table
+   - Clients table
+   - Tasks table
+   - Events table
+   - Tags/Categories table
+   ```
+
+2. Generate and configure TypeScript types
+   - Set up type generation pipeline
+   - Create custom type utilities
+   - Implement database interface types
+
+### Phase 3: Core Features Implementation
+
+1. Timeline View Components
+
+   - Create base layout structure
+   - Implement week-based navigation
+   - Build daily column components
+   - Add drag-and-drop functionality
+
+2. Task/Event Management
+
+   - Create/Edit/Delete operations
+   - Status management
+   - Priority handling
+   - Date/time management
+   - Project/Client association
+
+3. Data Fetching Layer
+   - Implement Supabase queries
+   - Set up real-time subscriptions
+   - Create data hooks and utilities
+   - Optimize for performance
+
+### Phase 4: UI/UX Development
+
+1. Timeline Interface
+
+   - Responsive design implementation
+   - Accessibility features
+   - Interactive elements
+   - Loading states and animations
+
+2. Task/Event Cards
+   - Card component design
+   - Status indicators
+   - Priority visualization
+   - Interactive features
+
+### Phase 5: Advanced Features
+
+1. Filtering and Search
+
+   - Implementation of filter logic
+   - Search functionality
+   - Advanced sorting options
+
+2. Real-time Collaboration
+
+   - Real-time updates
+   - Conflict resolution
+   - Presence indicators
+
+3. Data Export/Import
+   - CSV export functionality
+   - Import utilities
+   - Data backup features
+
+### Phase 6: Testing and Deployment
+
+1. Testing Implementation
+
+   - Unit tests
+   - Integration tests
+   - E2E tests
+   - Performance testing
+
+2. Deployment
+   - Production environment setup
+   - CI/CD pipeline
+   - Monitoring and logging
+   - Performance optimization
+
+## Technical Stack Details
+
+### Frontend
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- React DnD (for drag and drop)
+- Date management libraries
+
+### Backend (Supabase)
+
+- Authentication
+- PostgreSQL Database
+- Real-time subscriptions
+- Storage for attachments
+- Row Level Security
+
+### Development Tools
+
+- ESLint
+- Prettier
+- Husky for git hooks
+- Jest for testing
+
+## Progress Tracking
+
+- [ ] Phase 1 Complete
+- [ ] Phase 2 Complete
+- [ ] Phase 3 Complete
+- [ ] Phase 4 Complete
+- [ ] Phase 5 Complete
+- [ ] Phase 6 Complete
