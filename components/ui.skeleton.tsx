@@ -1,7 +1,9 @@
-export default function UISkeleton() {
-  return (
-    <div className="flex justify-center items-center h-full">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-    </div>
-  );
+import { cn } from "@/lib/utils";
+
+interface SkeletonProps {
+  className?: string;
+}
+
+export default function UISkeleton({ className }: SkeletonProps) {
+  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
 }

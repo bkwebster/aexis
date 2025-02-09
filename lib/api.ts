@@ -1,11 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 import type { Database } from "@/database.types";
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
+type TaskInsert = Database["public"]["Tables"]["tasks"]["Insert"];
 export type Task = Database["public"]["Tables"]["tasks"]["Row"] & {
   project: { name: string } | null;
   client: { name: string } | null;
@@ -13,17 +9,27 @@ export type Task = Database["public"]["Tables"]["tasks"]["Row"] & {
 
 export type Project = Database["public"]["Tables"]["projects"]["Row"];
 
-export async function fetchTasks(projectId?: string) {
+const supabase = createClient();
+
+export const fetchTasks = async ({
+  projectId,
+  sortKey = "order",
+}: {
+  projectId?: string;
+  sortKey?: string;
+}) => {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
+
+  if (userError || !user) throw new Error("User not authenticated");
 
   let query = supabase
     .from("tasks")
     .select("*, project:projects(name), client:clients(name)")
     .eq("user_id", user.id)
-    .order("order", { ascending: true });
+    .order(sortKey, { ascending: true });
 
   if (projectId) {
     query = query.eq("project_id", projectId);
@@ -36,41 +42,15 @@ export async function fetchTasks(projectId?: string) {
   }
 
   return data || [];
-}
+};
 
-export async function updateTaskOrder(tasks: Task[]) {
+export const fetchProjects = async () => {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
 
-  const updates = tasks.map((task, index) => ({
-    id: task.id,
-    order: index,
-    user_id: user.id,
-    title: task.title,
-    client_id: task.client_id,
-    project_id: task.project_id,
-    description: task.description,
-    due_date: task.due_date,
-    priority: task.priority,
-    status: task.status,
-  }));
-
-  const { error } = await supabase.from("tasks").upsert(updates, {
-    onConflict: "id",
-  });
-
-  if (error) {
-    throw new Error("Error updating task order: " + error.message);
-  }
-}
-
-export async function fetchProjects() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
+  if (userError || !user) throw new Error("User not authenticated");
 
   const { data, error } = await supabase
     .from("projects")
@@ -82,47 +62,73 @@ export async function fetchProjects() {
   }
 
   return data || [];
-}
+};
 
-export async function createProject(name: string, description?: string) {
+export const createProject = async (name: string, description?: string) => {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
+
+  if (userError || !user) throw new Error("User not authenticated");
 
   const { data, error } = await supabase
     .from("projects")
     .insert({ name, description, user_id: user.id })
-    .select();
+    .select()
+    .single();
 
   if (error) {
     throw new Error("Error creating project: " + error.message);
   }
 
-  return data[0];
-}
+  return data;
+};
 
-export async function createTask(
-  task: Omit<Task, "id" | "user_id" | "created_at" | "updated_at">
-) {
+export const createTask = async (task: Omit<TaskInsert, "user_id">) => {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
+
+  if (userError || !user) throw new Error("User not authenticated");
 
   const { data, error } = await supabase
     .from("tasks")
     .insert({ ...task, user_id: user.id })
-    .select();
+    .select()
+    .single();
 
   if (error) {
     throw new Error("Error creating task: " + error.message);
   }
 
-  return data[0];
-}
+  return data;
+};
 
-export function subscribeToTasks(callback: () => void) {
+export const updateTaskOrder = async (tasks: Task[]) => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) throw new Error("User not authenticated");
+
+  // Update each task's order individually
+  for (let i = 0; i < tasks.length; i++) {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ order: i })
+      .eq("id", tasks[i].id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      throw new Error("Error updating task order: " + error.message);
+    }
+  }
+};
+
+export const subscribeToTasks = (callback: () => void) => {
   const channel = supabase
     .channel("tasks_changes")
     .on(
@@ -137,13 +143,14 @@ export function subscribeToTasks(callback: () => void) {
   return () => {
     supabase.removeChannel(channel);
   };
-}
+};
 
-export async function getCurrentUser() {
+export const getCurrentUser = async () => {
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
+
   if (error) throw new Error("Error fetching current user: " + error.message);
   return user;
-}
+};

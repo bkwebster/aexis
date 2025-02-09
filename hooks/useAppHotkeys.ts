@@ -3,9 +3,11 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 export const useAppHotkeys = () => {
   const router = useRouter();
+  const { toggleTheme } = useTheme();
 
   const navigateToDashboard = useCallback(() => {
     router.push("/");
@@ -16,9 +18,8 @@ export const useAppHotkeys = () => {
   }, [router]);
 
   const toggleDarkMode = useCallback(() => {
-    // Implement dark mode toggle logic here
-    console.log("Toggling dark mode");
-  }, []);
+    toggleTheme();
+  }, [toggleTheme]);
 
   // Define your hotkeys here
   useHotkeys("shift+d", navigateToDashboard, { enableOnFormTags: true });

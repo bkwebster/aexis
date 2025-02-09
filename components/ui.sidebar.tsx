@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoutButton } from "./ui.button.logout";
 
 export default function UISidebar() {
   return (
@@ -13,6 +14,9 @@ export default function UISidebar() {
           </li>
           <li>
             <Link href="/clients">Clients</Link>
+          </li>
+          <li>
+            <LogoutButton />
           </li>
         </ul>
       </nav>

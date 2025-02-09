@@ -1,18 +1,9 @@
-import { Geist, Azeret_Mono as Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import SessionProvider from "@/components/session-provider";
-import { AppHotkeysProvider } from "@/components/hotkeys-provider";
-import { Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import UIHeader from "@/components/ui.header";
-import UISidebar from "@/components/ui.sidebar";
-import UISkeleton from "@/components/ui.skeleton";
-import { AuthProvider } from "@/components/auth.provider";
-
-const queryClient = new QueryClient();
-
+import RootProvider from "@/components/provider.root";
+import { Toaster } from "sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,27 +19,21 @@ export const metadata: Metadata = {
   description: "Plan and schedule",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen overflow-hidden relative`}
       >
-        <QueryClientProvider client={queryClient}>
-          <SessionProvider>
-            <AuthProvider>
-              <AppHotkeysProvider>
-                <UIHeader />
-                <UISidebar />
-                <Suspense fallback={<UISkeleton />}>{children}</Suspense>
-              </AppHotkeysProvider>
-            </AuthProvider>
-          </SessionProvider>
-        </QueryClientProvider>
+        <RootProvider>
+          {children}
+          <Toaster
+            position="bottom-left"
+            closeButton
+            richColors
+            duration={2000}
+          />
+        </RootProvider>
       </body>
     </html>
   );
