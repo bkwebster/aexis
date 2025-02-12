@@ -9,7 +9,7 @@ import {
   isToday,
   addDays,
   subDays,
-  getWeek,
+  getISOWeek,
 } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -17,16 +17,18 @@ interface CalendarProps {
   date?: Date;
   className?: string;
   week?: number;
+  baseDate?: Date;
 }
 
 export function Calendar({
   date = new Date(),
   className,
   week,
+  baseDate = new Date(),
 }: CalendarProps) {
-  const firstDayOfMonth = startOfMonth(date);
-  const lastDayOfMonth = endOfMonth(date);
-  const month = format(date, "MMM").toUpperCase();
+  const firstDayOfMonth = startOfMonth(baseDate);
+  const lastDayOfMonth = endOfMonth(baseDate);
+  const month = format(baseDate, "MMM").toUpperCase();
   const currentDayIndex = new Date().getDay();
   const mondayBasedIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
 
@@ -62,13 +64,15 @@ export function Calendar({
 
   // Get week number for the current week or specified week
   const weekNumber =
-    week !== undefined ? getWeek(weeks[week - 1]?.[0] || date) : getWeek(date);
+    week !== undefined
+      ? getISOWeek(weeks[week - 1]?.[0] || date)
+      : getISOWeek(date);
 
   // If week is specified, only show that week
   const daysToShow = week !== undefined ? weeks[week - 1] || [] : allDays;
 
   // Check if we're viewing the current week
-  const isCurrentWeek = getWeek(new Date()) === weekNumber;
+  const isCurrentWeek = getISOWeek(new Date()) === weekNumber;
 
   return (
     <div

@@ -27,13 +27,18 @@ import {
   format,
 } from "date-fns";
 
-export function TaskList({ week = 1 }: { week?: number }) {
+export function TaskList({
+  week = 1,
+  baseDate = new Date(2025, 1, 1),
+}: {
+  week?: number;
+  baseDate?: Date;
+}) {
   const queryClient = useQueryClient();
 
   // Calculate week ranges more accurately
-  const today = new Date(2025, 1, 1); // February 2025 (month is 0-based)
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
+  const monthStart = startOfMonth(baseDate);
+  const monthEnd = endOfMonth(baseDate);
   const weekStart =
     week === 1 ? monthStart : addDays(monthStart, (week - 1) * 7);
   const uncappedWeekEnd = addDays(weekStart, 6);
