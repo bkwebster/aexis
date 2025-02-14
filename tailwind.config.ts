@@ -10,10 +10,6 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ["var(--font-geist-sans)"],
-        mono: ["var(--font-geist-mono)"],
-      },
       colors: {
         background: "hsla(var(--background))",
         foreground: "hsla(var(--foreground))",
@@ -77,13 +73,16 @@ export default {
         md: "6px",
         sm: "4px",
       },
+      fontFamily: {
+        sans: ["var(--font-helvetica-now)"],
+        mono: ["var(--font-helvetica-now)"],
+      },
       fontSize: {
         xs: "10px",
         sm: "12px",
-        base: "14px",
-        md: "16px",
-        lg: "18px",
-        xl: "24px",
+        base: "12px",
+        md: "12px",
+        lg: "16px",
       },
     },
   },

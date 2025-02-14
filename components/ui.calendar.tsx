@@ -28,7 +28,7 @@ export function Calendar({
 }: CalendarProps) {
   const firstDayOfMonth = startOfMonth(baseDate);
   const lastDayOfMonth = endOfMonth(baseDate);
-  const month = format(baseDate, "MMM").toUpperCase();
+  const month = format(baseDate, "MMM");
   const currentDayIndex = new Date().getDay();
   const mondayBasedIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
 
@@ -76,7 +76,7 @@ export function Calendar({
 
   return (
     <div
-      className={cn("font-mono text-xs w-fit flex flex-col gap-1", className)}
+      className={cn("text-xs w-fit flex flex-col gap-1 select-none", className)}
     >
       <div className="text-left text-muted/50 flex justify-center items-center gap-1 relative h-2">
         <span
@@ -97,7 +97,7 @@ export function Calendar({
         </span>
       </div>
 
-      <div className="grid grid-cols-7 gap-x-2 text-muted/50">
+      <div className="grid grid-cols-7 gap-x-1 text-muted/50">
         <>
           <div
             className={cn(

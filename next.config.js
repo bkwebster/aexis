@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: {
+    appIsrStatus: false,
+  },
   experimental: {
     // Enable modern build optimizations
     optimizePackageImports: [

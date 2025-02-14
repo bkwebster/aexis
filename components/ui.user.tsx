@@ -33,7 +33,7 @@ export default function UIUser() {
     <DropdownMenu>
       <DropdownMenuTrigger className="relative">
         <Avatar className="h-5 w-5 text-xs bg-border">
-          <AvatarFallback className="bg-foreground text-background">
+          <AvatarFallback className="bg-foreground text-background select-none">
             {userInitials}
           </AvatarFallback>
         </Avatar>
@@ -41,12 +41,12 @@ export default function UIUser() {
       <DropdownMenuContent align="end" className="bg-transparent border-0">
         <DropdownMenuItem
           onClick={() => router.push("/profile")}
-          className="cursor-pointer bg-transparent border-0"
+          className="cursor-pointer bg-transparent border-0 select-none"
         >
           <User size={14} />
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer bg-transparent border-0"
+          className="cursor-pointer bg-transparent border-0 select-none"
           onClick={() => handleLogout()}
         >
           <LogOut size={14} className="cursor-pointer" />

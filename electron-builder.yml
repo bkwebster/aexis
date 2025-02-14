@@ -1,0 +1,14 @@
+appId: com.aexis.app
+productName: AEXIS
+directories:
+  output: dist
+  buildResources: electron/resources
+files:
+  - out/**/*
+  - electron/**/*
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+    - target: zip
+  icon: electron/resources/icon.icns

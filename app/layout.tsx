@@ -1,18 +1,16 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import RootProvider from "@/components/provider.root";
 import { Toaster } from "sonner";
+import WindowControls from "@/components/ui.window.controls";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Font files can be colocated inside of `app`
+const helveticaNow = localFont({
+  src: "./Helvetica-Now-Var.woff2",
+  display: "swap",
+  variable: "--font-helvetica-now",
 });
 
 export const metadata: Metadata = {
@@ -24,9 +22,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen overflow-hidden relative`}
+        className={`${helveticaNow.className} ${helveticaNow.variable} antialiased h-screen w-screen overflow-hidden relative`}
       >
         <RootProvider>
+          <WindowControls />
           {children}
           <Toaster
             position="bottom-left"

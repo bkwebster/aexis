@@ -35,11 +35,11 @@ export function Task({ task }: TaskProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="touch-manipulation"
+      className="touch-manipulation select-none"
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{task.title}</CardTitle>
+          <CardTitle className="text-xs font-normal">{task.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 text-sm">

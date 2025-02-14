@@ -4,12 +4,14 @@ import {
   useEffect,
   useRef,
   useState,
-  useImperativeHandle,
   Fragment,
+  useCallback,
+  useImperativeHandle,
 } from "react";
 import { Calendar } from "@/components/ui.calendar";
 import { TaskList } from "@/components/tasks.list";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import {
   addMonths,
   getMonth,
@@ -22,7 +24,6 @@ import {
   getISOWeekYear,
   format,
 } from "date-fns";
-import { cn } from "@/lib/utils";
 
 interface MonthColumnProps {
   date: Date;
@@ -36,53 +37,63 @@ function MonthColumn({
   const monthEnd = endOfMonth(date);
   const today = new Date();
   const currentWeek = getISOWeek(today);
+  const currentYear = getISOWeekYear(today);
 
   const weeksInMonth = eachWeekOfInterval(
     { start: monthStart, end: monthEnd },
     { weekStartsOn: 1 }
-  ).map((weekStart) => getISOWeek(weekStart));
+  ).map((weekStart) => ({
+    weekNum: getISOWeek(weekStart),
+    year: getISOWeekYear(weekStart),
+  }));
 
   return (
     <div className="contents" {...props}>
       {/* Add spacer before the first week of the month */}
-      <div className="grid grid-rows-[96px_1fr_30px] min-w-[28px]">
+      <div className="grid grid-rows-[64px_1fr_48px] min-w-[48px]">
         <div className="border-r border-b" />
         <div className="border-r border-b" />
         <div className="border-r" />
       </div>
-      <div className="grid bg-border/20 grid-rows-[96px_1fr_30px] min-w-[128px]">
-        <div className="border-r border-b text-xs uppercase font-mono p-3 text-muted">
+      <div
+        className="grid bg-accent/10 grid-rows-[64px_1fr_48px] min-w-[128px]"
+        style={{ scrollSnapAlign: "start" }}
+      >
+        <div className="border-r border-b text-xs p-3 text-muted">
           {format(monthStart, "MMM")}
         </div>
         <div className="border-r border-b" />
         <div className="border-r" />
       </div>
-      <div className="grid grid-rows-[96px_1fr_30px] min-w-[28px]">
+      <div className="grid grid-rows-[64px_1fr_48px] min-w-[48px]">
         <div className="border-r border-b" />
         <div className="border-r border-b" />
         <div className="border-r" />
       </div>
 
-      {weeksInMonth.map((weekNum, i) => (
-        <Fragment key={`week-group-${weekNum}`}>
+      {weeksInMonth.map(({ weekNum, year }, i) => (
+        <Fragment key={`week-group-${weekNum}-${year}`}>
           <div
-            className="grid grid-rows-[96px_1fr_30px] min-w-[240px]"
+            className="grid grid-rows-[64px_1fr_48px] min-w-[540px]"
             data-week={weekNum}
             data-current={
-              weekNum === currentWeek &&
-              getISOWeekYear(date) === getISOWeekYear(today)
-                ? "true"
-                : "false"
+              weekNum === currentWeek && year === currentYear ? "true" : "false"
             }
+            style={{ scrollSnapAlign: "start" }}
           >
             {/* Calendar + Tasks Column */}
             <div
               className={cn(
                 "border-r border-b overflow-hidden w-full h-full",
                 weekNum === currentWeek &&
-                  getISOWeekYear(date) === getISOWeekYear(today) &&
+                  year === currentYear &&
                   "bg-accent/10"
               )}
+              data-current={
+                weekNum === currentWeek && year === currentYear
+                  ? "true"
+                  : "false"
+              }
             >
               <div className="p-3">
                 <Calendar week={i + 1} baseDate={date} />
@@ -92,7 +103,7 @@ function MonthColumn({
               className={cn(
                 "border-r border-b h-full w-full",
                 weekNum === currentWeek &&
-                  getISOWeekYear(date) === getISOWeekYear(today) &&
+                  year === currentYear &&
                   "bg-accent/10"
               )}
             >
@@ -106,8 +117,8 @@ function MonthColumn({
           {/* Add 28px spacer between weeks */}
           {i < weeksInMonth.length - 1 && (
             <div
-              key={`week-spacer-${weekNum}`}
-              className="grid grid-rows-[96px_1fr_30px] min-w-[28px]"
+              key={`week-spacer-${weekNum}-${year}`}
+              className="grid grid-rows-[64px_1fr_48px] min-w-[48px]"
             >
               <div className="border-r border-b" />
               <div className="border-r border-b" />
@@ -134,26 +145,21 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
-    // Find element with the highlighted background
-    const highlightedWeek = scrollContainer.querySelector(".bg-accent\\/10");
+    // Find the current week element more precisely
+    const currentWeekElement = scrollContainer.querySelector(
+      '[data-current="true"]'
+    );
 
-    if (highlightedWeek) {
-      // Simply scroll the highlighted week to the start
+    if (currentWeekElement) {
+      const weekLeft = (currentWeekElement as HTMLElement).offsetLeft;
+
+      // Scroll to align the week 32px from the left edge
       scrollContainer.scrollTo({
-        left: (highlightedWeek as HTMLElement).offsetLeft - 32,
+        left: Math.max(0, weekLeft - 32),
         behavior: "smooth",
       });
     }
   };
-
-  // Expose scrollToToday function
-  useImperativeHandle(
-    ref,
-    () => ({
-      scrollToToday,
-    }),
-    []
-  );
 
   // Initialize with enough months to fill the viewport plus buffer
   useEffect(() => {
@@ -175,11 +181,10 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     });
   }, []);
 
-  const loadMoreMonths = () => {
+  const loadMoreMonths = useCallback(() => {
     if (isLoading) return;
     setIsLoading(true);
 
-    // Add next 3 months as a batch
     setMonths((prev) => {
       const lastMonth = prev[prev.length - 1];
       const newMonths = [1, 2, 3].map((i) => addMonths(lastMonth, i));
@@ -187,7 +192,7 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     });
 
     setIsLoading(false);
-  };
+  }, [isLoading]);
 
   // Handle scroll to load more
   useEffect(() => {
@@ -206,11 +211,21 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [loadMoreMonths]);
 
+  // Expose scrollToToday function
+  useImperativeHandle(ref, () => ({
+    scrollToToday,
+  }));
+
   return (
     <div
       ref={scrollRef}
-      className="overflow-x-auto flex snap-x snap-mandatory"
-      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      className={cn("overflow-x-auto flex")}
+      style={{
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        scrollSnapType: "x proximity",
+        WebkitOverflowScrolling: "touch",
+      }}
     >
       {months.map((date) => (
         <MonthColumn
