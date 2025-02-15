@@ -3,9 +3,9 @@ const path = require("path");
 const isDev = process.env.NODE_ENV === "development";
 const startUrl = process.env.ELECTRON_START_URL || "http://localhost:3000";
 
-async function createWindow() {
-  console.log("Creating window...");
-  // Create the browser window.
+let mainWindow;
+
+async function createBrowserWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -19,34 +19,16 @@ async function createWindow() {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: -100, y: -100 }, // Hide native buttons by moving them off-screen
     show: false,
-    backgroundColor: "#fff",
+    transparent: true,
+    backgroundColor: "transparent",
+    hasShadow: true,
+    vibrancy: "window",
+    visualEffectState: "active",
     center: true,
   });
 
-  // Enable window controls from renderer
   win.webContents.setWindowOpenHandler(({ url }) => {
     return { action: "deny" };
-  });
-
-  // Handle window control events
-  ipcMain.on("minimize-window", () => {
-    win.minimize();
-  });
-
-  ipcMain.on("maximize-window", () => {
-    if (win.isMaximized()) {
-      win.unmaximize();
-    } else {
-      win.maximize();
-    }
-  });
-
-  ipcMain.on("close-window", () => {
-    win.close();
-  });
-
-  ipcMain.on("is-maximized", (event) => {
-    event.returnValue = win.isMaximized();
   });
 
   win.once("ready-to-show", () => {
@@ -54,9 +36,6 @@ async function createWindow() {
     win.show();
     win.focus();
   });
-
-  // Load the app
-  console.log(`Loading URL: ${startUrl}`);
 
   try {
     await win.loadURL(startUrl);
@@ -69,6 +48,47 @@ async function createWindow() {
   } catch (error) {
     console.error("Failed to load window:", error);
   }
+
+  return win;
+}
+
+async function createWindow() {
+  console.log("Creating window...");
+  mainWindow = await createBrowserWindow();
+
+  // Handle window control events
+  ipcMain.on("minimize-window", () => {
+    mainWindow.minimize();
+  });
+
+  ipcMain.on("maximize-window", () => {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  });
+
+  ipcMain.on("close-window", () => {
+    mainWindow.close();
+  });
+
+  ipcMain.on("hide-window", () => {
+    mainWindow.hide();
+  });
+
+  ipcMain.on("quit-app", () => {
+    app.quit();
+  });
+
+  ipcMain.on("is-maximized", (event) => {
+    event.returnValue = mainWindow.isMaximized();
+  });
+
+  // Handle new window creation
+  ipcMain.on("create-window", async () => {
+    await createBrowserWindow();
+  });
 }
 
 // This method will be called when Electron has finished initialization
@@ -85,7 +105,12 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  } else {
+    // If window exists but is hidden, show it
+    mainWindow?.show();
   }
 });

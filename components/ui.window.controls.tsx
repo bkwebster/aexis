@@ -1,8 +1,8 @@
 "use client";
 
-import { Minus, Square, X } from "lucide-react";
+import { ChevronsUpDown, Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 declare global {
   interface Window {
@@ -10,7 +10,10 @@ declare global {
       minimize: () => void;
       maximize: () => void;
       close: () => void;
+      hide: () => void;
+      quit: () => void;
       isMaximized: () => boolean;
+      createWindow: () => void;
     };
   }
 }
@@ -25,14 +28,29 @@ declare module "react" {
 export default function WindowControls() {
   const [isMaximized, setIsMaximized] = useState(false);
 
+  // Global app shortcuts
+  useHotkeys("cmd+w", () => window.electron?.hide(), { preventDefault: true });
+  useHotkeys("cmd+q", () => window.electron?.quit(), { preventDefault: true });
+
   useEffect(() => {
     const handleMaximizeChange = () => {
       setIsMaximized(window.electron?.isMaximized());
     };
 
     window.addEventListener("resize", handleMaximizeChange);
-    return () => window.removeEventListener("resize", handleMaximizeChange);
+
+    return () => {
+      window.removeEventListener("resize", handleMaximizeChange);
+    };
   }, []);
+
+  const handleMaximize = () => {
+    window.electron?.maximize();
+  };
+
+  const handleClose = () => {
+    window.electron?.hide();
+  };
 
   return (
     <>
@@ -44,39 +62,48 @@ export default function WindowControls() {
         <div
           className="absolute inset-x-0 top-0 h-[8px] cursor-grab hover:cursor-grabbing pointer-events-auto"
           style={{ WebkitAppRegion: "drag" }}
+          onDoubleClick={handleMaximize}
         />
         <div
           className="absolute inset-y-0 top-[180px] left-0 w-[8px] cursor-grab hover:cursor-grabbing pointer-events-auto"
           style={{ WebkitAppRegion: "drag" }}
+          onDoubleClick={handleMaximize}
         />
         <div
           className="absolute inset-y-0 right-0 w-[8px] cursor-grab hover:cursor-grabbing pointer-events-auto"
           style={{ WebkitAppRegion: "drag" }}
+          onDoubleClick={handleMaximize}
         />
         <div
           className="absolute inset-x-0 bottom-0 h-[8px] cursor-grab hover:cursor-grabbing pointer-events-auto"
           style={{ WebkitAppRegion: "drag" }}
+          onDoubleClick={handleMaximize}
         />
       </div>
-
-      <div className="flex items-center justify-end gap-2 px-3 py-2 absolute top-0 right-0 z-50 -mr-[1px]">
+      <div className="flex items-center justify-start gap-2 left-2 top-2 fixed z-50">
         <button
-          onClick={() => window.electron?.minimize()}
-          className="w-3 h-3 rounded-full bg-yellow-400 hover:bg-yellow-300 transition-colors duration-150"
+          onClick={handleClose}
+          className="w-3 h-3 rounded-full flex justify-center items-center text-muted dark:text-background bg-foreground/10 hover:bg-foreground/25 transition-colors duration-150"
         >
-          <Minus className="w-2 h-2 opacity-0 group-hover:opacity-50" />
+          <X size={8} strokeWidth={3} />
         </button>
         <button
-          onClick={() => window.electron?.maximize()}
-          className="w-3 h-3 rounded-full bg-green-400 hover:bg-green-300 transition-colors duration-150"
+          onClick={handleMaximize}
+          className="w-3 h-3 rounded-full flex justify-center items-center text-muted dark:text-background bg-foreground/10 hover:bg-foreground/25 transition-colors duration-150"
         >
-          <Square className="w-2 h-2 opacity-0 group-hover:opacity-50" />
+          {isMaximized ? (
+            <Minus size={8} strokeWidth={3} />
+          ) : (
+            <ChevronsUpDown size={8} strokeWidth={3} className="-rotate-45" />
+          )}
         </button>
+      </div>
+      <div className="flex items-center justify-start gap-2 right-2 top-2 fixed z-50">
         <button
-          onClick={() => window.electron?.close()}
-          className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors duration-150"
+          onClick={() => window.electron?.createWindow()}
+          className="w-3 h-3 rounded-full flex justify-center items-center text-muted dark:text-background bg-foreground/10 hover:bg-foreground/25 transition-colors duration-150"
         >
-          <X className="w-2 h-2 opacity-0 group-hover:opacity-50" />
+          <Plus size={8} strokeWidth={3} />
         </button>
       </div>
     </>

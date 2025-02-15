@@ -62,7 +62,11 @@
   * {
     @apply border-border;
   }
+  html {
+    background: transparent;
+  }
   body {
-    @apply font-sans bg-background text-foreground text-base;
+    @apply font-sans text-foreground text-base;
+    background: transparent !important;
   }
 }

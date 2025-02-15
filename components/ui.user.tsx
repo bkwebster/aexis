@@ -10,6 +10,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { User, LogOut } from "lucide-react";
+import { LogoutButton } from "@/components/ui.button.logout";
+
 export default function UIUser() {
   const session = useSession();
   const router = useRouter();
@@ -45,11 +47,8 @@ export default function UIUser() {
         >
           <User size={14} />
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer bg-transparent border-0 select-none"
-          onClick={() => handleLogout()}
-        >
-          <LogOut size={14} className="cursor-pointer" />
+        <DropdownMenuItem className="cursor-pointer bg-transparent border-0 select-none">
+          <LogoutButton />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

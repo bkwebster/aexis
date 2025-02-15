@@ -12,9 +12,9 @@ export default function TodayButton({ timelineRef }: TodayButtonProps) {
     timelineRef.current?.scrollToToday();
   };
 
-  const month = new Date().toLocaleDateString("en-US", {
-    month: "short",
-  });
+  // const month = new Date().toLocaleDateString("en-US", {
+  //   month: "short",
+  // });
 
   const weekDay = new Date().toLocaleDateString("en-US", {
     weekday: "short",

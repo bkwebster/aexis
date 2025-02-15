@@ -8,125 +8,62 @@ import {
   useCallback,
   useImperativeHandle,
 } from "react";
-import { Calendar } from "@/components/ui.calendar";
 import { TaskList } from "@/components/tasks.list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import {
-  addMonths,
-  getMonth,
-  getYear,
-  startOfMonth,
-  endOfMonth,
-  eachWeekOfInterval,
-  getISOWeek,
-  subMonths,
-  getISOWeekYear,
-  format,
-} from "date-fns";
+import { getISOWeek, getISOWeekYear } from "date-fns";
 
-interface MonthColumnProps {
+interface WeekColumnProps {
   date: Date;
 }
 
-function MonthColumn({
+function WeekColumn({
   date,
   ...props
-}: MonthColumnProps & React.HTMLAttributes<HTMLDivElement>) {
-  const monthStart = startOfMonth(date);
-  const monthEnd = endOfMonth(date);
+}: WeekColumnProps & React.HTMLAttributes<HTMLDivElement>) {
   const today = new Date();
   const currentWeek = getISOWeek(today);
   const currentYear = getISOWeekYear(today);
 
-  const weeksInMonth = eachWeekOfInterval(
-    { start: monthStart, end: monthEnd },
-    { weekStartsOn: 1 }
-  ).map((weekStart) => ({
-    weekNum: getISOWeek(weekStart),
-    year: getISOWeekYear(weekStart),
-  }));
+  const weekNum = getISOWeek(date);
+  const year = getISOWeekYear(date);
 
   return (
-    <div className="contents" {...props}>
-      {/* Add spacer before the first week of the month */}
-      <div className="grid grid-rows-[64px_1fr_48px] min-w-[48px]">
-        <div className="border-r border-b" />
-        <div className="border-r border-b" />
-        <div className="border-r" />
-      </div>
+    <div
+      className="grid grid-rows-[64px_1fr_48px] min-w-[calc((100vw/1)-48px)] max-w-[calc((100vw/1)-48px)] md:min-w-[calc((100vw/2)-48px)] md:max-w-[calc((100vw/2)-48px)] lg:min-w-[calc((100vw/3)-48px)] lg:max-w-[calc((100vw/3)-48px)]"
+      data-week={weekNum}
+      data-week-date={date.toISOString()}
+      data-current={
+        weekNum === currentWeek && year === currentYear ? "true" : "false"
+      }
+      style={{ scrollSnapAlign: "start" }}
+      {...props}
+    >
+      {/* Week header */}
       <div
-        className="grid bg-accent/10 grid-rows-[64px_1fr_48px] min-w-[128px]"
-        style={{ scrollSnapAlign: "start" }}
+        className={cn(
+          "border-r border-b overflow-hidden w-full h-full",
+          weekNum === currentWeek && year === currentYear && "bg-accent/10"
+        )}
+        data-current={
+          weekNum === currentWeek && year === currentYear ? "true" : "false"
+        }
       >
-        <div className="border-r border-b text-xs p-3 text-muted">
-          {format(monthStart, "MMM")}
+        <div className="p-3">
+          <div className="h-[64px]" />
         </div>
-        <div className="border-r border-b" />
-        <div className="border-r" />
       </div>
-      <div className="grid grid-rows-[64px_1fr_48px] min-w-[48px]">
-        <div className="border-r border-b" />
-        <div className="border-r border-b" />
-        <div className="border-r" />
-      </div>
-
-      {weeksInMonth.map(({ weekNum, year }, i) => (
-        <Fragment key={`week-group-${weekNum}-${year}`}>
-          <div
-            className="grid grid-rows-[64px_1fr_48px] min-w-[540px]"
-            data-week={weekNum}
-            data-current={
-              weekNum === currentWeek && year === currentYear ? "true" : "false"
-            }
-            style={{ scrollSnapAlign: "start" }}
-          >
-            {/* Calendar + Tasks Column */}
-            <div
-              className={cn(
-                "border-r border-b overflow-hidden w-full h-full",
-                weekNum === currentWeek &&
-                  year === currentYear &&
-                  "bg-accent/10"
-              )}
-              data-current={
-                weekNum === currentWeek && year === currentYear
-                  ? "true"
-                  : "false"
-              }
-            >
-              <div className="p-3">
-                <Calendar week={i + 1} baseDate={date} />
-              </div>
-            </div>
-            <ScrollArea
-              className={cn(
-                "border-r border-b h-full w-full",
-                weekNum === currentWeek &&
-                  year === currentYear &&
-                  "bg-accent/10"
-              )}
-            >
-              <div className="p-3 flex flex-col gap-3">
-                <TaskList week={i + 1} baseDate={date} />
-              </div>
-            </ScrollArea>
-            <div className="border-r" />
-          </div>
-
-          {/* Add 28px spacer between weeks */}
-          {i < weeksInMonth.length - 1 && (
-            <div
-              key={`week-spacer-${weekNum}-${year}`}
-              className="grid grid-rows-[64px_1fr_48px] min-w-[48px]"
-            >
-              <div className="border-r border-b" />
-              <div className="border-r border-b" />
-              <div className="border-r" />
-            </div>
-          )}
-        </Fragment>
-      ))}
+      <ScrollArea
+        className={cn(
+          "border-r border-b h-full w-full",
+          weekNum === currentWeek && year === currentYear && "bg-accent/10"
+        )}
+      >
+        <div className="p-3 flex flex-col gap-3">
+          <TaskList week={weekNum} baseDate={date} />
+        </div>
+      </ScrollArea>
+      <div className="border-r" />
     </div>
   );
 }
@@ -136,9 +73,31 @@ export interface TimelineRef {
 }
 
 export const Timeline = forwardRef<TimelineRef>((_, ref) => {
-  const [months, setMonths] = useState<Date[]>([]);
+  const [weeks, setWeeks] = useState<Date[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // const [visibleWeekDate, setVisibleWeekDate] = useState(new Date());
+  // const [visibleWeekNum, setVisibleWeekNum] = useState(getISOWeek(new Date()));
+
+  const loadMoreWeeks = useCallback(
+    (count: number = 3) => {
+      if (isLoading) return;
+      setIsLoading(true);
+
+      setWeeks((prev) => {
+        const lastWeek = prev[prev.length - 1];
+        const newWeeks = Array.from({ length: count }, (_, i) => {
+          const date = new Date(lastWeek);
+          date.setDate(date.getDate() + (i + 1) * 7);
+          return date;
+        });
+        return [...prev, ...newWeeks];
+      });
+
+      setIsLoading(false);
+    },
+    [isLoading]
+  );
 
   // Function to scroll to today's column
   const scrollToToday = () => {
@@ -153,27 +112,37 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     if (currentWeekElement) {
       const weekLeft = (currentWeekElement as HTMLElement).offsetLeft;
 
-      // Scroll to align the week 32px from the left edge
+      // Scroll to align the week 48px from the left edge
       scrollContainer.scrollTo({
-        left: Math.max(0, weekLeft - 32),
+        left: Math.max(0, weekLeft - 48),
         behavior: "smooth",
       });
     }
   };
 
-  // Initialize with enough months to fill the viewport plus buffer
+  // Initialize with enough weeks to fill the viewport plus buffer
   useEffect(() => {
-    const monthWidth = 1200; // width of each month column
     const viewportWidth = window.innerWidth;
-    const initialMonthsNeeded = Math.ceil(viewportWidth / monthWidth) + 2; // +2 for buffer
     const today = new Date();
 
-    // Start from 2 months before today
-    const initialMonths = Array.from({ length: initialMonthsNeeded }, (_, i) =>
-      addMonths(subMonths(today, 2), i)
-    );
+    // Create a temporary week column to measure its width
+    const tempColumn = document.createElement("div");
+    tempColumn.className =
+      "grid grid-rows-[64px_1fr_48px] min-w-[calc((100vw/1)-48px)] max-w-[calc((100vw/1)-48px)] md:min-w-[calc((100vw/2)-48px)] md:max-w-[calc((100vw/2)-48px)] lg:min-w-[calc((100vw/3)-48px)] lg:max-w-[calc((100vw/3)-48px)]";
+    document.body.appendChild(tempColumn);
+    const weekWidth = tempColumn.getBoundingClientRect().width;
+    document.body.removeChild(tempColumn);
 
-    setMonths(initialMonths);
+    const initialWeeksNeeded = Math.ceil(viewportWidth / weekWidth) + 2; // +2 for buffer
+
+    // Start from 2 weeks before today
+    const initialWeeks = Array.from({ length: initialWeeksNeeded }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - 14 + i * 7);
+      return date;
+    });
+
+    setWeeks(initialWeeks);
 
     // Scroll to today's column after DOM has updated
     requestAnimationFrame(() => {
@@ -181,18 +150,40 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     });
   }, []);
 
-  const loadMoreMonths = useCallback(() => {
-    if (isLoading) return;
-    setIsLoading(true);
+  // // Set up intersection observer for week columns
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       // Find the entry that is most visible
+  //       const mostVisible = entries.reduce((prev, current) => {
+  //         return current.intersectionRatio > prev.intersectionRatio
+  //           ? current
+  //           : prev;
+  //       });
 
-    setMonths((prev) => {
-      const lastMonth = prev[prev.length - 1];
-      const newMonths = [1, 2, 3].map((i) => addMonths(lastMonth, i));
-      return [...prev, ...newMonths];
-    });
+  //       if (mostVisible && mostVisible.intersectionRatio > 0) {
+  //         const element = mostVisible.target as HTMLElement;
+  //         const weekDate = element.dataset.weekDate;
+  //         if (weekDate) {
+  //           const date = new Date(weekDate);
+  //           setVisibleWeekDate(date);
+  //           setVisibleWeekNum(getISOWeek(date));
+  //         }
+  //       }
+  //     },
+  //     {
+  //       root: null,
+  //       threshold: [0, 0.25, 0.5, 0.75, 1],
+  //       rootMargin: "0px -75% 0px -48px", // This creates a detection zone near the sidebar
+  //     }
+  //   );
 
-    setIsLoading(false);
-  }, [isLoading]);
+  //   // Observe week columns
+  //   const weekElements = document.querySelectorAll("[data-week-date]");
+  //   weekElements.forEach((element) => observer.observe(element));
+
+  //   return () => observer.disconnect();
+  // }, [weeks]);
 
   // Handle scroll to load more
   useEffect(() => {
@@ -201,15 +192,23 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
 
     const handleScroll = () => {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
+
+      // Get the actual width of a week column
+      const weekColumn = scrollContainer.querySelector("[data-week-date]");
+      if (!weekColumn) return;
+
+      const weekWidth = weekColumn.getBoundingClientRect().width;
+      const visibleColumns = Math.ceil(clientWidth / weekWidth);
+
       // If we're within 2 viewport widths of the end, load more
       if (scrollWidth - (scrollLeft + clientWidth) < clientWidth * 2) {
-        loadMoreMonths();
+        loadMoreWeeks(visibleColumns);
       }
     };
 
     scrollContainer.addEventListener("scroll", handleScroll);
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, [loadMoreMonths]);
+  }, [loadMoreWeeks]);
 
   // Expose scrollToToday function
   useImperativeHandle(ref, () => ({
@@ -219,21 +218,33 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
   return (
     <div
       ref={scrollRef}
-      className={cn("overflow-x-auto flex")}
+      className={cn("overflow-x-auto flex min-h-screen max-h-screen h-screen")}
       style={{
         scrollbarWidth: "none",
         msOverflowStyle: "none",
-        scrollSnapType: "x proximity",
+        scrollSnapType: "x mandatory",
         WebkitOverflowScrolling: "touch",
       }}
     >
-      {months.map((date) => (
-        <MonthColumn
-          key={`${getYear(date)}-${getMonth(date)}`}
-          date={date}
-          data-month={`${getYear(date)}-${getMonth(date)}`}
-        />
-      ))}
+      {/* <div className="fixed top-[12px] left-[224px] z-10">
+        <Calendar week={visibleWeekNum} baseDate={visibleWeekDate} />
+      </div> */}
+      {weeks.map((date, i) => {
+        const weekKey = `week-${getISOWeek(date)}-${getISOWeekYear(date)}`;
+        return (
+          <Fragment key={weekKey}>
+            <WeekColumn date={date} />
+            {/* Add spacer between weeks */}
+            {i < weeks.length - 1 && (
+              <div className="grid grid-rows-[64px_1fr_48px] min-w-[48px]">
+                <div className="border-r border-b" />
+                <div className="border-r border-b" />
+                <div className="border-r" />
+              </div>
+            )}
+          </Fragment>
+        );
+      })}
     </div>
   );
 });

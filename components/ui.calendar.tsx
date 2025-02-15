@@ -14,21 +14,18 @@ import {
 import { cn } from "@/lib/utils";
 
 interface CalendarProps {
-  date?: Date;
   className?: string;
   week?: number;
   baseDate?: Date;
 }
 
 export function Calendar({
-  date = new Date(),
   className,
   week,
   baseDate = new Date(),
 }: CalendarProps) {
   const firstDayOfMonth = startOfMonth(baseDate);
   const lastDayOfMonth = endOfMonth(baseDate);
-  const month = format(baseDate, "MMM");
   const currentDayIndex = new Date().getDay();
   const mondayBasedIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
 
@@ -62,17 +59,25 @@ export function Calendar({
     allDays.slice(i * 7, (i + 1) * 7)
   );
 
-  // Get week number for the current week or specified week
-  const weekNumber =
-    week !== undefined
-      ? getISOWeek(weeks[week - 1]?.[0] || date)
-      : getISOWeek(date);
+  // Get week number from the baseDate
+  const weekNumber = week || getISOWeek(baseDate);
 
-  // If week is specified, only show that week
-  const daysToShow = week !== undefined ? weeks[week - 1] || [] : allDays;
+  // Find the week that contains the baseDate
+  const targetWeek =
+    weeks.find((weekDays) =>
+      weekDays.some((day) => getISOWeek(day) === weekNumber)
+    ) || weeks[0];
 
   // Check if we're viewing the current week
   const isCurrentWeek = getISOWeek(new Date()) === weekNumber;
+
+  // Get the month display string
+  const monthDisplay = (() => {
+    if (!targetWeek) return format(baseDate, "MMM");
+
+    const months = new Set(targetWeek.map((day) => format(day, "MMM")));
+    return Array.from(months).join("-");
+  })();
 
   return (
     <div
@@ -80,20 +85,17 @@ export function Calendar({
     >
       <div className="text-left text-muted/50 flex justify-center items-center gap-1 relative h-2">
         <span
-          className={cn(
-            "absolute left-0",
-            cn(isCurrentWeek && "text-foreground")
-          )}
+          className={cn("absolute left-0", isCurrentWeek && "text-foreground")}
         >
           W{weekNumber}
         </span>
         <span
           className={cn(
             "w-full text-center",
-            cn(isCurrentWeek && "text-foreground")
+            isCurrentWeek && "text-foreground"
           )}
         >
-          {month}
+          {monthDisplay}
         </span>
       </div>
 
@@ -157,8 +159,8 @@ export function Calendar({
           </div>
         </>
 
-        {daysToShow.map((day) => {
-          const isCurrentMonth = day.getMonth() === date.getMonth();
+        {targetWeek?.map((day) => {
+          const isCurrentMonth = day.getMonth() === baseDate.getMonth();
           return (
             <div
               key={day.toISOString()}
@@ -173,7 +175,7 @@ export function Calendar({
                   "text-muted/50"
               )}
             >
-              {format(day, "dd")}
+              {format(day, "d")}
             </div>
           );
         })}
