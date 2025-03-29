@@ -2,6 +2,21 @@ import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import DashboardClient from "@/components/dashboard.client";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default async function DashboardPage() {
   const supabase = await createClient();

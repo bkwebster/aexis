@@ -68,7 +68,7 @@ export function ForgotPassword({
                 Reset Password
               </Button>
             </div>
-            {message && <p className="mt-4 text-sm text-center">{message}</p>}
+            {message && <p className="mt-4 text-center">{message}</p>}
           </form>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, Minus, Plus, X } from "lucide-react";
+import { ChevronsUpDown, Minus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -52,9 +52,8 @@ export default function WindowControls() {
     window.electron?.hide();
   };
 
-  return (
-    <>
-      {/* Draggable edge */}
+  const draggableEdges = () => {
+    return (
       <div
         className="fixed inset-0 pointer-events-none"
         style={{ WebkitAppRegion: "no-drag" }}
@@ -80,6 +79,12 @@ export default function WindowControls() {
           onDoubleClick={handleMaximize}
         />
       </div>
+    );
+  };
+
+  return (
+    <>
+      {draggableEdges()}
       <div className="flex items-center justify-start gap-2 left-2 top-2 fixed z-50">
         <button
           onClick={handleClose}
@@ -96,14 +101,6 @@ export default function WindowControls() {
           ) : (
             <ChevronsUpDown size={8} strokeWidth={3} className="-rotate-45" />
           )}
-        </button>
-      </div>
-      <div className="flex items-center justify-start gap-2 right-2 top-2 fixed z-50">
-        <button
-          onClick={() => window.electron?.createWindow()}
-          className="w-3 h-3 rounded-full flex justify-center items-center text-muted dark:text-background bg-foreground/10 hover:bg-foreground/25 transition-colors duration-150"
-        >
-          <Plus size={8} strokeWidth={3} />
         </button>
       </div>
     </>

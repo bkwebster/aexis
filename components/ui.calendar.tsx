@@ -80,9 +80,7 @@ export function Calendar({
   })();
 
   return (
-    <div
-      className={cn("text-xs w-fit flex flex-col gap-1 select-none", className)}
-    >
+    <div className={cn("w-fit flex flex-col gap-1 select-none", className)}>
       <div className="text-left text-muted/50 flex justify-center items-center gap-1 relative h-2">
         <span
           className={cn("absolute left-0", isCurrentWeek && "text-foreground")}

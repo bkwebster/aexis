@@ -1,13 +1,5 @@
 "use client";
-import {
-  forwardRef,
-  useEffect,
-  useRef,
-  useState,
-  Fragment,
-  useCallback,
-  useImperativeHandle,
-} from "react";
+import { useEffect, useRef, useState, Fragment, useCallback } from "react";
 import { TaskList } from "@/components/tasks.list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -72,7 +64,7 @@ export interface TimelineRef {
   scrollToToday: () => void;
 }
 
-export const Timeline = forwardRef<TimelineRef>((_, ref) => {
+export const Timeline = () => {
   const [weeks, setWeeks] = useState<Date[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -210,11 +202,6 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [loadMoreWeeks]);
 
-  // Expose scrollToToday function
-  useImperativeHandle(ref, () => ({
-    scrollToToday,
-  }));
-
   return (
     <div
       ref={scrollRef}
@@ -247,6 +234,6 @@ export const Timeline = forwardRef<TimelineRef>((_, ref) => {
       })}
     </div>
   );
-});
+};
 
 Timeline.displayName = "Timeline";

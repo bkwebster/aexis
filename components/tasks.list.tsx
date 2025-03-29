@@ -151,9 +151,7 @@ export function TaskList({
   return (
     <div className="space-y-4">
       {/* Add a week indicator at the top */}
-      <div className="text-xs font-medium text-muted-foreground mb-2">
-        Week {week}
-      </div>
+      <div className="text-muted-foreground mb-2">Week {week}</div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -165,7 +163,7 @@ export function TaskList({
 
           return (
             <div key={dayStr} className="space-y-2">
-              <div className="text-xs text-muted-foreground flex items-center gap-2">
+              <div className="text-muted-foreground flex items-center gap-2">
                 <span className="w-[24px] text-center">{format(day, "d")}</span>
                 <span>{format(day, "EEEE, MMM")}</span>
               </div>
@@ -184,7 +182,7 @@ export function TaskList({
                     ))}
                   </SortableContext>
                 ) : (
-                  <div className="text-xs text-muted-foreground/50 h-[32px] flex items-center justify-center">
+                  <div className="text-muted-foreground/50 h-[32px] flex items-center justify-center">
                     No tasks scheduled this day
                   </div>
                 )}

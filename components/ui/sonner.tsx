@@ -15,7 +15,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         style: {
           fontFamily: "var(--font-helvetica-now)",
-          fontSize: "12px",
+          fontSize: "10px",
         },
         classNames: {
           toast:

@@ -39,10 +39,10 @@ export function Task({ task }: TaskProps) {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-xs font-normal">{task.title}</CardTitle>
+          <CardTitle>{task.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-2 text-sm">
+          <div className="grid gap-2">
             {task.project && (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Project:</span>

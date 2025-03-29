@@ -27,7 +27,7 @@ export default function TodayButton({ timelineRef }: TodayButtonProps) {
   return (
     <div
       onClick={handleClick}
-      className={`text-xs relative w-[48px] h-[64px] cursor-pointer`}
+      className={`relative w-[48px] h-[64px] cursor-pointer`}
     >
       <span className="opacity-10 group-hover:opacity-100 transition-opacity duration-150 text-foreground w-[30px] h-[30px]">
         <div className="flex items-center justify-center w-full">

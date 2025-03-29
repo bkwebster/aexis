@@ -145,7 +145,7 @@ export function Auth({
               />
               <Link
                 href="/forgot-password"
-                className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                className="ml-auto inline-block underline-offset-4 hover:underline"
               >
                 Forgot your password?
               </Link>
@@ -162,9 +162,7 @@ export function Auth({
               Account creation is disabled.
             </Button>
             {message && (
-              <p className="mt-4 text-sm text-center text-destructive">
-                {message}
-              </p>
+              <p className="mt-4 text-center text-destructive">{message}</p>
             )}
           </form>
         </CardContent>
