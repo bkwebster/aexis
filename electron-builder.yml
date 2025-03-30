@@ -1,0 +1,38 @@
+appId: com.aexis.app
+productName: AEXIS
+directories:
+  output: dist
+  buildResources: electron/resources
+files:
+  - out/**/*
+  - electron/**/*
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: zip
+      arch:
+        - arm64
+        - x64
+  icon: electron/resources/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: electron/resources/entitlements.mac.plist
+  entitlementsInherit: electron/resources/entitlements.mac.plist
+  notarize: true
+dmg:
+  sign: false
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 130
+      y: 190
+      type: file
+    - x: 410
+      y: 190
+      type: link
+      path: /Applications

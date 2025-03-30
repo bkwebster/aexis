@@ -10,10 +10,6 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ["var(--font-geist-sans)"],
-        mono: ["var(--font-geist-mono)"],
-      },
       colors: {
         background: "hsla(var(--background))",
         foreground: "hsla(var(--foreground))",
@@ -55,6 +51,16 @@ export default {
           "4": "hsla(var(--chart-4))",
           "5": "hsla(var(--chart-5))",
         },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       spacing: {
         "1": "4px",
@@ -77,13 +83,13 @@ export default {
         md: "6px",
         sm: "4px",
       },
+      fontFamily: {
+        sans: ["var(--font-helvetica-now)"],
+        mono: ["var(--font-helvetica-now)"],
+      },
       fontSize: {
-        xs: "10px",
-        sm: "12px",
-        base: "14px",
-        md: "16px",
-        lg: "18px",
-        xl: "24px",
+        sm: "10px",
+        base: "12px",
       },
     },
   },

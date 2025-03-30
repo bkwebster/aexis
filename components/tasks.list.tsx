@@ -20,31 +20,40 @@ import { fetchTasks, updateTaskOrder } from "@/lib/api";
 import UISkeleton from "@/components/ui.skeleton";
 import { ErrorDisplay } from "@/components/ui.error";
 import {
-  startOfMonth,
-  endOfMonth,
-  addDays,
-  isWithinInterval,
   format,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameDay,
+  getISOWeek,
+  getISOWeekYear,
 } from "date-fns";
+import { useMemo } from "react";
 
-export function TaskList({ week = 1 }: { week?: number }) {
+export function TaskList({
+  week = 1,
+  baseDate = new Date(2025, 1, 1),
+}: {
+  week?: number;
+  baseDate?: Date;
+}) {
   const queryClient = useQueryClient();
 
-  // Calculate week ranges more accurately
-  const today = new Date(2025, 1, 1); // February 2025 (month is 0-based)
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
-  const weekStart =
-    week === 1 ? monthStart : addDays(monthStart, (week - 1) * 7);
-  const uncappedWeekEnd = addDays(weekStart, 6);
-  const weekEnd = uncappedWeekEnd > monthEnd ? monthEnd : uncappedWeekEnd;
+  // Calculate week boundaries using pure ISO week logic
+  const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 }); // Monday
+  const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 }); // Sunday
+
+  // Calculate ISO week number
+  const isoWeek = getISOWeek(weekStart);
+  const isoYear = getISOWeekYear(weekStart);
 
   // Log week range only in development
   if (process.env.NODE_ENV === "development") {
-    console.log(`Week ${week} range:`, {
-      monthStart: format(monthStart, "yyyy-MM-dd"),
+    console.log(`Week ${isoWeek} (ISO) range:`, {
       weekStart: format(weekStart, "yyyy-MM-dd"),
       weekEnd: format(weekEnd, "yyyy-MM-dd"),
+      isoWeek,
+      isoYear,
     });
   }
 
@@ -69,6 +78,24 @@ export function TaskList({ week = 1 }: { week?: number }) {
     );
   }
 
+  // Group tasks by day within the week
+  const tasksByDay = useMemo(() => {
+    const days = eachDayOfInterval({
+      start: weekStart,
+      end: weekEnd,
+    });
+
+    return days.reduce((acc, day) => {
+      const dayStr = format(day, "yyyy-MM-dd");
+      const dayTasks = tasks.filter((task) => {
+        if (!task.due_date) return false;
+        return isSameDay(new Date(task.due_date), day);
+      });
+      acc[dayStr] = dayTasks;
+      return acc;
+    }, {} as Record<string, typeof tasks>);
+  }, [tasks, weekStart, weekEnd]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -83,14 +110,18 @@ export function TaskList({ week = 1 }: { week?: number }) {
     const activeTask = tasks.find((task) => task.id === active.id);
     if (!activeTask) return;
 
-    const oldIndex = tasks.findIndex((task) => task.id === active.id);
+    // Get the target day from the container ID
+    const targetDay = over.id.toString().split("-")[0]; // Format: "yyyy-MM-dd-container"
 
-    // Update the task's due date to match the target week
+    // Update the task's due date to the target day
     const updatedTasks = [...tasks];
-    updatedTasks[oldIndex] = {
-      ...activeTask,
-      due_date: weekStart.toISOString(),
-    };
+    const taskIndex = updatedTasks.findIndex((t) => t.id === active.id);
+    if (taskIndex !== -1) {
+      updatedTasks[taskIndex] = {
+        ...activeTask,
+        due_date: new Date(targetDay).toISOString(),
+      };
+    }
 
     // Optimistically update the cache
     queryClient.setQueryData(["tasks"], updatedTasks);
@@ -111,60 +142,55 @@ export function TaskList({ week = 1 }: { week?: number }) {
     return <UISkeleton className="h-48" />;
   }
 
-  // Filter tasks for this week of the month
-  const tasksForWeek = tasks.filter((task) => {
-    if (!task.due_date) return false;
-    const dueDate = new Date(task.due_date);
-    const isInWeek = isWithinInterval(dueDate, {
-      start: weekStart,
-      end: weekEnd,
-    });
-
-    // Log task filtering only in development and only for debugging
-    if (process.env.NODE_ENV === "development" && isInWeek) {
-      console.log(
-        `Task ${task.id} (${format(
-          dueDate,
-          "yyyy-MM-dd"
-        )}) included in week ${week}`
-      );
-    }
-
-    return isInWeek;
+  // Get all days in the week
+  const weekDays = eachDayOfInterval({
+    start: weekStart,
+    end: weekEnd,
   });
 
-  // Log summary only in development
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      `Week ${week} has ${tasksForWeek.length}/${tasks.length} tasks`
-    );
-  }
-
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-      modifiers={[
-        (args) => {
-          const { transform } = args;
-          return {
-            ...transform,
-            x: 0, // Lock horizontal movement
-          };
-        },
-      ]}
-    >
-      <SortableContext
-        items={tasksForWeek}
-        strategy={verticalListSortingStrategy}
+    <div className="space-y-4">
+      {/* Add a week indicator at the top */}
+      <div className="text-muted-foreground mb-2">Week {week}</div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <div className="space-y-2">
-          {tasksForWeek.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+        {weekDays.map((day) => {
+          const dayStr = format(day, "yyyy-MM-dd");
+          const dayTasks = tasksByDay[dayStr] || [];
+
+          return (
+            <div key={dayStr} className="space-y-2">
+              <div className="text-muted-foreground flex items-center gap-2">
+                <span className="w-[24px] text-center">{format(day, "d")}</span>
+                <span>{format(day, "EEEE, MMM")}</span>
+              </div>
+              <div
+                id={`${dayStr}-container`}
+                data-week={week}
+                className="space-y-2 min-h-[32px] bg-accent/5 rounded-md p-2 ml-[24px]"
+              >
+                {dayTasks.length > 0 ? (
+                  <SortableContext
+                    items={dayTasks.map((t) => t.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {dayTasks.map((task) => (
+                      <TaskItem key={task.id} task={task} />
+                    ))}
+                  </SortableContext>
+                ) : (
+                  <div className="text-muted-foreground/50 h-[32px] flex items-center justify-center">
+                    No tasks scheduled this day
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </DndContext>
+    </div>
   );
 }

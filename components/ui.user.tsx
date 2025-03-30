@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { User, LogOut } from "lucide-react";
+import { User } from "lucide-react";
+import { LogoutButton } from "@/components/ui.button.logout";
+
 export default function UIUser() {
   const session = useSession();
   const router = useRouter();
@@ -24,16 +26,11 @@ export default function UIUser() {
         .toUpperCase()
     : "?";
 
-  const handleLogout = () => {
-    router.push("/login");
-    router.refresh();
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="relative">
-        <Avatar className="h-5 w-5 text-xs bg-border">
-          <AvatarFallback className="bg-foreground text-background">
+        <Avatar className="h-5 w-5 bg-border">
+          <AvatarFallback className="bg-foreground text-background select-none">
             {userInitials}
           </AvatarFallback>
         </Avatar>
@@ -41,15 +38,12 @@ export default function UIUser() {
       <DropdownMenuContent align="end" className="bg-transparent border-0">
         <DropdownMenuItem
           onClick={() => router.push("/profile")}
-          className="cursor-pointer bg-transparent border-0"
+          className="cursor-pointer bg-transparent border-0 select-none"
         >
           <User size={14} />
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer bg-transparent border-0"
-          onClick={() => handleLogout()}
-        >
-          <LogOut size={14} className="cursor-pointer" />
+        <DropdownMenuItem className="cursor-pointer bg-transparent border-0 select-none">
+          <LogoutButton />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -78,7 +78,7 @@ export function ResetPassword({
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto inline-block underline-offset-4 hover:underline"
                   >
                     Forgot your password?
                   </Link>
@@ -98,7 +98,7 @@ export function ResetPassword({
               <Button onClick={handleSignIn}>Sign In</Button>
             </div>
           </form>
-          {message && <p className="mt-4 text-sm text-center">{message}</p>}
+          {message && <p className="mt-4 text-center">{message}</p>}
         </CardContent>
       </Card>
     </div>

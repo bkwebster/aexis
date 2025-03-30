@@ -6,6 +6,7 @@ import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
 
 export function LogoutButton({ variant }: { variant?: "ghost" }) {
   const supabase = useSupabase();
@@ -41,7 +42,10 @@ export function LogoutButton({ variant }: { variant?: "ghost" }) {
           "hover:text-foreground transition-colors duration-120"
       )}
     >
-      {mutation.isPending ? "Signing out..." : "Sign Out"}
+      <div className="flex">
+        <LogOut size={16} />
+        {mutation.isPending ? "Signing out..." : "Sign Out"}
+      </div>
     </div>
   );
 }

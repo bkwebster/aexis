@@ -56,9 +56,7 @@ export function AddProject() {
         {mutation.isPending ? "Adding..." : "Add Project"}
       </Button>
       {mutation.error && (
-        <p className="text-sm text-destructive">
-          {(mutation.error as Error).message}
-        </p>
+        <p className="text-destructive">{(mutation.error as Error).message}</p>
       )}
     </form>
   );

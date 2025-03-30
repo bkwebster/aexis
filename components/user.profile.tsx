@@ -61,7 +61,7 @@ export function UserProfile() {
         />
         <Button type="submit">Update Password</Button>
       </form>
-      {message && <p className="text-sm text-blue-600">{message}</p>}
+      {message && <p className="text-blue-600">{message}</p>}
     </div>
   );
 }
